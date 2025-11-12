@@ -1,6 +1,4 @@
-import { Handler } from "@netlify/functions";
-
-export const handler: Handler = async (event) => {
+exports.handler = async (event) => {
   // Handle CORS preflight request
   if (event.httpMethod === "OPTIONS") {
     return {
@@ -8,7 +6,7 @@ export const handler: Handler = async (event) => {
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Headers": "Content-Type, Content-Length",
       },
       body: "",
     };
@@ -25,29 +23,16 @@ export const handler: Handler = async (event) => {
   }
 
   try {
-    // Get the file from the request
-    const contentType = event.headers["content-type"] || "";
-    
-    if (!contentType.includes("multipart/form-data")) {
-      return {
-        statusCode: 400,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
-        body: JSON.stringify({ error: "Expected form data" }),
-      };
-    }
-
     // Forward the exact same request to the backend
     const response = await fetch(
       "https://chordmini-backend-191567167632.us-central1.run.app/api/recognize-chords",
       {
         method: "POST",
         headers: {
-          // Forward necessary headers
+          // Forward necessary headers but remove origin to avoid CORS at backend
           "Content-Type": event.headers["content-type"] || "multipart/form-data",
         },
-        body: event.body, // Forward the raw body
+        body: event.isBase64Encoded ? Buffer.from(event.body, 'base64') : event.body,
       }
     );
 
@@ -66,7 +51,7 @@ export const handler: Handler = async (event) => {
       },
       body: JSON.stringify(data),
     };
-  } catch (err: any) {
+  } catch (err) {
     console.error(err);
     return {
       statusCode: 500,
