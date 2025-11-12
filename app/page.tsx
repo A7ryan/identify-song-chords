@@ -56,8 +56,7 @@ export default function Page() {
       const formData = new FormData();
       formData.append("file", file);
 
-      // const res = await fetch("/api/recognize", {
-        const res = await fetch("/.netlify/functions/proxy-recognize", {
+      const res = await fetch("/api/recognize", {
         method: "POST",
         body: formData,
       });
