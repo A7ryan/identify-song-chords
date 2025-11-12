@@ -56,7 +56,7 @@ export default function Page() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await fetch("https://chordmini-backend-191567167632.us-central1.run.app/api/recognize", {
+      const res = await fetch("/api/recognize", {
         method: "POST",
         body: formData,
       });
